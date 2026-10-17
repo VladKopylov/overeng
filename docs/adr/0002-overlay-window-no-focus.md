@@ -31,7 +31,7 @@
 2. Rust-команда `reassert_topmost`. На Windows вона:
    - читає `GWL_EXSTYLE`; якщо `WS_EX_NOACTIVATE` нема — додає його через `SetWindowLongPtrW` (фолбек на випадок, якщо tao його не поставив);
    - викликає `SetWindowPos(HWND_TOPMOST, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE)`: ставить вікно на верх TOPMOST-шару, не активуючи, не рухаючи й не змінюючи розмір;
-   - пише в лог, чи `WS_EX_NOACTIVATE` уже був. Очікуємо `true`. Якщо в лозі `false`, стиль додали ми, і це варто записати в `docs/spike-results.md`.
+   - пише в лог, чи `WS_EX_NOACTIVATE` уже був, але лише при першому виклику і при зміні значення ([0010](0010-debug-log.md)). Очікуємо `true`. Якщо в лозі `false`, стиль додали ми, і це варто записати в `docs/spike-results.md`.
    - `unsafe` тут виправданий: це виклики Win32 C API на `hwnd` вікна, що належить нашому процесу.
    - На macOS/Linux команда нічого не робить і повертає `Ok(false)`: оверлей над іграми потрібен лише на Windows.
 

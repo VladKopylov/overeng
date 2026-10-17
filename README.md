@@ -174,7 +174,8 @@ Type, Status, Added, Last reviewed. Інші назви — у розділі «
 - Windows: `%LOCALAPPDATA%\com.vlad.wordoverlay\logs\overlay-debug.log`
 - macOS: `~/Library/Logs/com.vlad.wordoverlay/overlay-debug.log`
 
-Ті самі рядки видно в терміналі, де запущено `npm run tauri dev`.
+Ті самі рядки видно в терміналі, де запущено `npm run tauri dev`. Лог ротується на 1 MB при кожному записі
+(старий файл стає `overlay-debug.log.old`), тож разом він не перевищує приблизно 2 MB, і чистити його не треба.
 
 ## WS_EX_NOACTIVATE (крок 1d)
 

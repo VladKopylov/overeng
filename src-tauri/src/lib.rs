@@ -4,7 +4,8 @@ mod settings;
 
 use std::fs::OpenOptions;
 use std::io::Write;
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::path::Path;
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicU8, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use tauri::{AppHandle, Emitter, Manager, State, WebviewWindow, WindowEvent};
@@ -45,6 +46,12 @@ const CARDS_UPDATED_EVENT: &str = "cards-updated";
 
 const MAX_LOG_BYTES: u64 = 1024 * 1024;
 
+const LOG_FILE: &str = "overlay-debug.log";
+
+const LOG_FILE_OLD: &str = "overlay-debug.log.old";
+
+static LAST_REASSERT_STATE: AtomicU8 = AtomicU8::new(u8::MAX);
+
 fn timestamp() -> String {
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -76,7 +83,8 @@ fn write_log(app: &AppHandle, msg: &str) {
         eprintln!("не створив папку логів {}: {e}", dir.display());
         return;
     }
-    let path = dir.join("overlay-debug.log");
+    let path = dir.join(LOG_FILE);
+    rotate_if_large(&path, MAX_LOG_BYTES);
     match OpenOptions::new().create(true).append(true).open(&path) {
         Ok(mut file) => {
             if let Err(e) = file.write_all(line.as_bytes()) {
@@ -87,16 +95,15 @@ fn write_log(app: &AppHandle, msg: &str) {
     }
 }
 
-fn rotate_log(app: &AppHandle) {
-    let Ok(dir) = app.path().app_log_dir() else {
-        return;
+fn rotate_if_large(path: &Path, max_bytes: u64) -> bool {
+    let Ok(meta) = std::fs::metadata(path) else {
+        return false;
     };
-    let path = dir.join("overlay-debug.log");
-    if let Ok(meta) = std::fs::metadata(&path) {
-        if meta.len() > MAX_LOG_BYTES {
-            let _ = std::fs::rename(&path, dir.join("overlay-debug.log.old"));
-        }
+    if meta.len() <= max_bytes {
+        return false;
     }
+    let old = path.with_file_name(LOG_FILE_OLD);
+    std::fs::rename(path, old).is_ok()
 }
 
 fn emit_overlay<S: serde::Serialize + Clone>(app: &AppHandle, event: &str, payload: S) {
@@ -258,10 +265,13 @@ fn debug_log(app: AppHandle, msg: String) {
 fn reassert_topmost(app: AppHandle, window: tauri::WebviewWindow) -> Result<(), String> {
     match reassert_topmost_impl(&window) {
         Ok(had_noactivate) => {
-            write_log(
-                &app,
-                &format!("reassert_topmost ok (WS_EX_NOACTIVATE вже був: {had_noactivate})"),
-            );
+            let state = u8::from(had_noactivate);
+            if LAST_REASSERT_STATE.swap(state, Ordering::SeqCst) != state {
+                write_log(
+                    &app,
+                    &format!("reassert_topmost ok (WS_EX_NOACTIVATE вже був: {had_noactivate})"),
+                );
+            }
             Ok(())
         }
         Err(e) => {
@@ -566,7 +576,6 @@ pub fn run() {
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
             let handle = app.handle();
-            rotate_log(handle);
             write_log(handle, "=== старт застосунку ===");
 
             for shortcut in [
@@ -636,4 +645,34 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("помилка під час запуску Tauri-застосунку");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn log_rotates_only_when_larger_than_limit() {
+        let dir = std::env::temp_dir().join(format!("word-overlay-log-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join(LOG_FILE);
+        let old = dir.join(LOG_FILE_OLD);
+
+        assert!(!rotate_if_large(&path, 100));
+
+        std::fs::write(&path, vec![b'x'; 100]).unwrap();
+        assert!(!rotate_if_large(&path, 100));
+        assert!(path.exists() && !old.exists());
+
+        std::fs::write(&path, vec![b'x'; 101]).unwrap();
+        assert!(rotate_if_large(&path, 100));
+        assert!(!path.exists() && old.exists());
+        assert_eq!(std::fs::metadata(&old).unwrap().len(), 101);
+
+        std::fs::write(&path, vec![b'y'; 200]).unwrap();
+        assert!(rotate_if_large(&path, 100));
+        assert_eq!(std::fs::metadata(&old).unwrap().len(), 200);
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
 }
