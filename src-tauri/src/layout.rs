@@ -101,6 +101,7 @@ pub enum Corner {
 pub struct Layout {
     pub visible: bool,
     pub expanded: bool,
+    pub hide_translation: bool,
     pub corner: Corner,
     pub position: Option<Rect>,
     pub compact_size: Option<SavedSize>,
@@ -112,6 +113,7 @@ impl Default for Layout {
         Layout {
             visible: true,
             expanded: false,
+            hide_translation: false,
             corner: Corner::default(),
             position: None,
             compact_size: None,
@@ -530,6 +532,7 @@ mod tests {
         let layout: Layout = serde_json::from_str(r#"{"corner":"top_left"}"#).unwrap();
         assert!(layout.visible);
         assert!(!layout.expanded);
+        assert!(!layout.hide_translation);
         assert_eq!(layout.corner, Corner::TopLeft);
         assert_eq!(layout.position, None);
     }

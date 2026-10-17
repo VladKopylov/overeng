@@ -86,6 +86,20 @@ select {
   margin-top: 8px;
 }
 
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  justify-self: start;
+  accent-color: var(--accent);
+}
+
+input[type="number"] {
+  width: 90px;
+  justify-self: start;
+}
+
 button {
   font: inherit;
   color: inherit;

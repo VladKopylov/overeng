@@ -23,6 +23,7 @@
 **Стан розкладки** — окремий ключ `layout` у `settings.json` (структура `Layout` у `src-tauri/src/layout.rs`), а не поле `Settings`: інакше `set_settings` з вікна налаштувань перезаписував би позицію, збережену оверлеєм. Поля:
 
 - `visible`, `expanded`, `corner` (`top_left` / `top_right` / `bottom_left` / `bottom_right`, за замовчуванням `bottom_right`);
+- `hide_translation` — ховати переклад за замовчуванням ([0019](0019-training-modes-auto-advance-and-hidden-translation.md));
 - `position` — останній збережений outer rect вікна в physical px (x, y, ширина, висота);
 - `compact_size` і `expanded_size` — розміри для кожного режиму окремо.
 - `#[serde(default)]`: старий або неповний JSON дає значення за замовчуванням.

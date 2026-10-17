@@ -92,6 +92,13 @@ body {
   color: #ffd98a;
 }
 
+.tr.masked {
+  -webkit-line-clamp: 1;
+  font-size: calc(12px * var(--font-scale));
+  letter-spacing: 0.02em;
+  color: rgba(255, 217, 138, 0.45);
+}
+
 .ex {
   -webkit-line-clamp: 2;
   flex-shrink: 1;

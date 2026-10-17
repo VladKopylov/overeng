@@ -4,7 +4,7 @@ mod settings;
 
 use std::fs::OpenOptions;
 use std::io::Write;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use tauri::{AppHandle, Emitter, Manager, State, WebviewWindow, WindowEvent};
@@ -25,6 +25,8 @@ const VISIBLE_SHORTCUT: &str = "ctrl+shift+F11";
 
 const EDIT_SHORTCUT: &str = "ctrl+shift+F12";
 
+const TRANSLATION_SHORTCUT: &str = "ctrl+shift+F7";
+
 const CYCLE_EVENT: &str = "cycle-phrase";
 
 const EXPANDED_EVENT: &str = "overlay-expanded";
@@ -32,6 +34,10 @@ const EXPANDED_EVENT: &str = "overlay-expanded";
 const VISIBLE_EVENT: &str = "overlay-visible";
 
 const EDIT_EVENT: &str = "toggle-edit";
+
+const TRANSLATION_EVENT: &str = "toggle-translation";
+
+const HIDE_TRANSLATION_EVENT: &str = "overlay-hide-translation";
 
 const LAYOUT_RESET_EVENT: &str = "layout-reset";
 
@@ -236,6 +242,14 @@ fn reset_overlay_position(app: AppHandle) -> Result<(), NotionError> {
 }
 
 #[tauri::command]
+fn set_hide_translation(app: AppHandle, hide: bool) -> Result<(), NotionError> {
+    settings::update_layout(&app, |l| l.hide_translation = hide)?;
+    write_log(&app, &format!("приховувати переклад: {hide}"));
+    emit_overlay(&app, HIDE_TRANSLATION_EVENT, hide);
+    Ok(())
+}
+
+#[tauri::command]
 fn debug_log(app: AppHandle, msg: String) {
     write_log(&app, &format!("[js] {msg}"));
 }
@@ -297,6 +311,58 @@ struct SyncState {
     running: AtomicBool,
 }
 
+#[derive(Default)]
+struct AutoAdvance {
+    generation: AtomicU64,
+}
+
+fn restart_auto_advance(app: &AppHandle) {
+    let generation = app
+        .state::<AutoAdvance>()
+        .generation
+        .fetch_add(1, Ordering::SeqCst)
+        + 1;
+    let interval = match settings::load(app) {
+        Ok(current) => current.auto_advance(),
+        Err(e) => {
+            write_log(
+                app,
+                &format!("автоперемикання: налаштування не прочитано: {e}"),
+            );
+            return;
+        }
+    };
+    let Some(interval) = interval else {
+        write_log(app, "автоперемикання вимкнено");
+        return;
+    };
+    write_log(
+        app,
+        &format!("автоперемикання кожні {} с", interval.as_secs()),
+    );
+    let handle = app.clone();
+    tauri::async_runtime::spawn(async move {
+        loop {
+            tokio::time::sleep(interval).await;
+            let current = handle
+                .state::<AutoAdvance>()
+                .generation
+                .load(Ordering::SeqCst);
+            if current != generation {
+                return;
+            }
+            let hidden = settings::load_layout(&handle)
+                .map(|l| !l.visible)
+                .unwrap_or(false);
+            if hidden {
+                continue;
+            }
+            write_log(&handle, "автоперемикання -> наступна картка");
+            emit_overlay(&handle, CYCLE_EVENT, ());
+        }
+    });
+}
+
 #[derive(serde::Serialize)]
 struct SyncResult {
     total: usize,
@@ -330,6 +396,7 @@ fn set_settings(app: AppHandle, new_settings: Settings) -> Result<(), NotionErro
     settings::save(&app, &new_settings)?;
     write_log(&app, "налаштування збережено");
     emit_overlay(&app, CARDS_UPDATED_EVENT, ());
+    restart_auto_advance(&app);
     Ok(())
 }
 
@@ -468,10 +535,13 @@ pub fn run() {
                     }
                     write_log(app, &format!("hotkey {shortcut:?} натиснуто"));
                     let mods = Modifiers::CONTROL | Modifiers::SHIFT;
-                    if shortcut.matches(mods, Code::F8) {
+                    if shortcut.matches(mods, Code::F7) {
+                        emit_overlay(app, TRANSLATION_EVENT, ());
+                    } else if shortcut.matches(mods, Code::F8) {
                         open_settings(app);
                     } else if shortcut.matches(mods, Code::F9) {
                         emit_overlay(app, CYCLE_EVENT, ());
+                        restart_auto_advance(app);
                     } else if shortcut.matches(mods, Code::F10) {
                         toggle_layout(app, EXPANDED_EVENT, |l| {
                             l.expanded = !l.expanded;
@@ -490,12 +560,17 @@ pub fn run() {
         )
         .plugin(tauri_plugin_store::Builder::new().build())
         .manage(SyncState::default())
+        .manage(AutoAdvance::default())
         .setup(|app| {
+            #[cfg(target_os = "macos")]
+            app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+
             let handle = app.handle();
             rotate_log(handle);
             write_log(handle, "=== старт застосунку ===");
 
             for shortcut in [
+                TRANSLATION_SHORTCUT,
                 CYCLE_SHORTCUT,
                 SETTINGS_SHORTCUT,
                 EXPAND_SHORTCUT,
@@ -538,6 +613,8 @@ pub fn run() {
                 });
             }
 
+            restart_auto_advance(handle);
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -554,7 +631,8 @@ pub fn run() {
             overlay_rect,
             save_overlay_rect,
             set_corner,
-            reset_overlay_position
+            reset_overlay_position,
+            set_hide_translation
         ])
         .run(tauri::generate_context!())
         .expect("помилка під час запуску Tauri-застосунку");

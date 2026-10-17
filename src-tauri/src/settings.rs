@@ -1,5 +1,5 @@
 use std::path::{Path, PathBuf};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -14,6 +14,7 @@ const KEY_SETTINGS: &str = "settings";
 const KEY_TOKEN: &str = "notion_token";
 const KEY_LAYOUT: &str = "layout";
 pub const CACHE_FILE: &str = "cards.json";
+pub const MIN_AUTO_ADVANCE_SECS: u64 = 10;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
@@ -23,6 +24,14 @@ pub struct Settings {
     pub data_source_name: Option<String>,
     pub mapping: Mapping,
     pub hidden_statuses: Vec<String>,
+    pub auto_advance_secs: u64,
+}
+
+impl Settings {
+    pub fn auto_advance(&self) -> Option<Duration> {
+        (self.auto_advance_secs > 0)
+            .then(|| Duration::from_secs(self.auto_advance_secs.max(MIN_AUTO_ADVANCE_SECS)))
+    }
 }
 
 impl Default for Settings {
@@ -33,6 +42,7 @@ impl Default for Settings {
             data_source_name: None,
             mapping: Mapping::default(),
             hidden_statuses: vec!["Mastered".to_string()],
+            auto_advance_secs: 0,
         }
     }
 }
@@ -225,6 +235,25 @@ mod tests {
         assert_eq!(s.database_input, "x");
         assert_eq!(s.hidden_statuses, vec!["Mastered"]);
         assert_eq!(s.mapping, Mapping::default());
+        assert_eq!(s.auto_advance_secs, 0);
+        assert_eq!(s.auto_advance(), None);
+    }
+
+    #[test]
+    fn auto_advance_interval_is_clamped_to_minimum() {
+        let short = Settings {
+            auto_advance_secs: 3,
+            ..Settings::default()
+        };
+        assert_eq!(
+            short.auto_advance(),
+            Some(Duration::from_secs(MIN_AUTO_ADVANCE_SECS))
+        );
+        let long = Settings {
+            auto_advance_secs: 300,
+            ..Settings::default()
+        };
+        assert_eq!(long.auto_advance(), Some(Duration::from_secs(300)));
     }
 
     #[test]

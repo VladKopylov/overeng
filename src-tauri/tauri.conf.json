@@ -28,6 +28,7 @@
         "focus": false,
         "focusable": false,
         "visible": true,
+        "visibleOnAllWorkspaces": true,
         "noRedirectionBitmap": true
       },
       {

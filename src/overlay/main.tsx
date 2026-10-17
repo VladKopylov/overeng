@@ -9,7 +9,7 @@ import "./overlay.css";
 
 type Rect = { x: number; y: number; width: number; height: number };
 
-type Layout = { visible: boolean; expanded: boolean };
+type Layout = { visible: boolean; expanded: boolean; hide_translation: boolean };
 
 type Drag = {
   pointerId: number;
@@ -159,14 +159,17 @@ function Overlay() {
   const [visible, setVisible] = useState(true);
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [hideTranslation, setHideTranslation] = useState(false);
+  const [revealed, setRevealed] = useState(false);
   const expandedRef = useRef(false);
   const editingRef = useRef(false);
   const idleTimer = useRef(0);
   const drag = useRef<Drag | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const card = cards[index % cards.length];
+  const translationShown = hideTranslation !== revealed;
 
-  useFitText(cardRef, [card, expanded, editing, visible]);
+  useFitText(cardRef, [card, expanded, editing, visible, translationShown]);
 
   const bumpIdle = () => {
     if (!editingRef.current) return;
@@ -253,6 +256,7 @@ function Overlay() {
         if (disposed || mine !== seq) return;
         setCards(loaded);
         setIndex(0);
+        setRevealed(false);
       });
     };
     listen("cards-updated", () => {
@@ -267,6 +271,12 @@ function Overlay() {
 
     listen("cycle-phrase", () => {
       setIndex((i) => i + 1);
+      setRevealed(false);
+    }).then(keep);
+
+    listen("toggle-translation", () => {
+      setRevealed((r) => !r);
+      log("toggle-translation");
     }).then(keep);
 
     const layoutListeners = [
@@ -288,6 +298,11 @@ function Overlay() {
         setVisible(payload);
         log(`overlay-visible -> ${payload}`);
       }).then(keep),
+      listen<boolean>("overlay-hide-translation", ({ payload }) => {
+        setHideTranslation(payload);
+        setRevealed(false);
+        log(`overlay-hide-translation -> ${payload}`);
+      }).then(keep),
     ];
 
     Promise.allSettled(layoutListeners).finally(() => {
@@ -299,7 +314,10 @@ function Overlay() {
           expandedRef.current = layout.expanded;
           setExpanded(layout.expanded);
           setVisible(layout.visible);
-          log(`layout: visible=${layout.visible} expanded=${layout.expanded}`);
+          setHideTranslation(layout.hide_translation);
+          log(
+            `layout: visible=${layout.visible} expanded=${layout.expanded} hide_translation=${layout.hide_translation}`,
+          );
         } catch (e) {
           log(`get_layout failed: ${String(e)}`);
         }
@@ -421,7 +439,12 @@ function Overlay() {
           {isMistakeFix && <div className="label">Mistake fix</div>}
           <div className="text">{card.phrase}</div>
           {card.pronunciation && <div className="pron">{card.pronunciation}</div>}
-          {card.translation && <div className="tr">{card.translation}</div>}
+          {card.translation &&
+            (translationShown ? (
+              <div className="tr">{card.translation}</div>
+            ) : (
+              <div className="tr masked">переклад · Ctrl+Shift+F7</div>
+            ))}
           {expanded ? (
             <>
               {card.synonym && <div className="syn">≈ {card.synonym}</div>}

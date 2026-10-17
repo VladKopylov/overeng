@@ -21,5 +21,7 @@
 | [0015](0015-overlay-geometry-pure-rust.md) | Геометрія оверлея — чиста функція в Rust | Accepted |
 | [0016](0016-edit-mode-drag-noactivate-window.md) | Перетягування в режимі редагування на вікні без фокусу | Accepted |
 | [0017](0017-exclusive-fullscreen-unsupported.md) | Exclusive fullscreen не підтримується — свідомо | Accepted |
+| [0018](0018-macos-background-utility.md) | macOS: фонова утиліта без Dock, оверлей на всіх робочих столах | Accepted |
+| [0019](0019-training-modes-auto-advance-and-hidden-translation.md) | Режими тренування: автоперемикання картки й приховування перекладу | Accepted |
 
 Новий ADR: наступний номер, формат `NNNN-short-title.md`, ті самі розділи, і рядок у цій таблиці.

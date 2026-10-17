@@ -23,12 +23,13 @@ type Settings = {
   data_source_name: string | null;
   mapping: Mapping;
   hidden_statuses: string[];
+  auto_advance_secs: number;
 };
 
 type SettingsView = Settings & { has_token: boolean };
 
 type Corner = "top_left" | "top_right" | "bottom_left" | "bottom_right";
-type Layout = { corner: Corner };
+type Layout = { corner: Corner; hide_translation: boolean };
 
 type DataSourceOption = { id: string; name: string };
 type SyncResult = { total: number; visible: number };
@@ -57,6 +58,7 @@ const CORNERS: Array<[Corner, string]> = [
 
 const HOTKEYS: Array<[string, string]> = [
   ["Ctrl+Shift+F9", "наступна картка"],
+  ["Ctrl+Shift+F7", "показати / приховати переклад поточної картки"],
   ["Ctrl+Shift+F10", "компактна / розгорнута картка"],
   ["Ctrl+Shift+F11", "сховати / показати оверлей"],
   ["Ctrl+Shift+F12", "режим редагування: перетягнути й змінити розмір (ще раз — готово)"],
@@ -75,6 +77,7 @@ function SettingsApp() {
   const [options, setOptions] = useState<DataSourceOption[]>([]);
   const [status, setStatus] = useState<Status>({ kind: "idle", text: "" });
   const [corner, setCorner] = useState<Corner>("bottom_right");
+  const [hideTranslation, setHideTranslation] = useState(false);
   const busy = status.kind === "busy";
 
   useEffect(() => {
@@ -87,7 +90,10 @@ function SettingsApp() {
       })
       .catch((e) => setStatus({ kind: "error", text: String(e) }));
     invoke<Layout>("get_layout")
-      .then((layout) => setCorner(layout.corner))
+      .then((layout) => {
+        setCorner(layout.corner);
+        setHideTranslation(layout.hide_translation);
+      })
       .catch((e) => log(`get_layout failed: ${String(e)}`));
   }, []);
 
@@ -177,6 +183,23 @@ function SettingsApp() {
   const setMapping = (key: keyof Mapping, value: string) =>
     setSettings({ ...settings, mapping: { ...settings.mapping, [key]: value } });
 
+  const toggleHideTranslation = (next: boolean) =>
+    run("Зберігаю…", async () => {
+      await invoke("set_hide_translation", { hide: next });
+      setHideTranslation(next);
+      log(`hide_translation -> ${next}`);
+      return next
+        ? "Переклад приховано. Ctrl+Shift+F7 показує його для поточної картки."
+        : "Переклад показується завжди.";
+    });
+
+  const autoAdvanceMinutes = Math.ceil(settings.auto_advance_secs / 60);
+
+  const setAutoAdvanceMinutes = (raw: string) => {
+    const minutes = Math.max(0, Math.floor(Number(raw) || 0));
+    setSettings({ ...settings, auto_advance_secs: minutes * 60 });
+  };
+
   return (
     <main className="page">
       <h1>Word Overlay — налаштування</h1>
@@ -256,6 +279,29 @@ function SettingsApp() {
           <span>Не показувати статуси (через кому)</span>
           <input type="text" value={hiddenText} onChange={(e) => setHiddenText(e.target.value)} />
         </label>
+        <label className="field">
+          <span>Приховувати переклад (режим згадування)</span>
+          <input
+            type="checkbox"
+            checked={hideTranslation}
+            disabled={busy}
+            onChange={(e) => void toggleHideTranslation(e.target.checked)}
+          />
+        </label>
+        <label className="field">
+          <span>Автоперемикання картки, хв (0 = вимкнено)</span>
+          <input
+            type="number"
+            min={0}
+            step={1}
+            value={autoAdvanceMinutes}
+            onChange={(e) => setAutoAdvanceMinutes(e.target.value)}
+          />
+        </label>
+        <p className="hint">
+          Переклад і розгорнутий режим (Ctrl+Shift+F10) незалежні: можна бачити всі приклади без
+          перекладу або і те, й те. Автоперемикання починає діяти після «Зберегти налаштування».
+        </p>
         <details>
           <summary>Колонки Notion (для іншої бази)</summary>
           <p className="hint">
