@@ -1,0 +1,257 @@
+{
+  "object": "list",
+  "results": [
+    {
+      "object": "page",
+      "id": "33333333-3333-4333-8333-333333333333",
+      "created_time": "2026-09-20T10:00:00.000Z",
+      "last_edited_time": "2026-10-01T10:00:00.000Z",
+      "parent": {
+        "type": "data_source_id",
+        "data_source_id": "aaaaaaaa-0000-4000-8000-000000000001",
+        "database_id": "bbbbbbbb-0000-4000-8000-000000000002"
+      },
+      "archived": false,
+      "in_trash": false,
+      "properties": {
+        "Phrase": {
+          "id": "title",
+          "type": "title",
+          "title": [
+            {
+              "type": "text",
+              "text": {
+                "content": "Fair point",
+                "link": null
+              },
+              "annotations": {
+                "bold": false,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+              },
+              "plain_text": "Fair point",
+              "href": null
+            }
+          ]
+        },
+        "Translation": {
+          "id": "tr",
+          "type": "rich_text",
+          "rich_text": [
+            {
+              "type": "text",
+              "text": {
+                "content": "Слушне зауваження",
+                "link": null
+              },
+              "annotations": {
+                "bold": false,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+              },
+              "plain_text": "Слушне зауваження",
+              "href": null
+            }
+          ]
+        },
+        "Pronunciation": {
+          "id": "pr",
+          "type": "rich_text",
+          "rich_text": []
+        },
+        "Description": {
+          "id": "de",
+          "type": "rich_text",
+          "rich_text": []
+        },
+        "Example": {
+          "id": "ex",
+          "type": "rich_text",
+          "rich_text": []
+        },
+        "More examples": {
+          "id": "me",
+          "type": "rich_text",
+          "rich_text": []
+        },
+        "Synonym": {
+          "id": "sy",
+          "type": "rich_text",
+          "rich_text": [
+            {
+              "type": "text",
+              "text": {
+                "content": "Good point",
+                "link": null
+              },
+              "annotations": {
+                "bold": false,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+              },
+              "plain_text": "Good point",
+              "href": null
+            }
+          ]
+        },
+        "Situation": {
+          "id": "si",
+          "type": "multi_select",
+          "multi_select": []
+        },
+        "Type": {
+          "id": "ty",
+          "type": "select",
+          "select": null
+        },
+        "Status": {
+          "id": "st",
+          "type": "status",
+          "status": {
+            "id": "st-mastered",
+            "name": "Mastered",
+            "color": "green"
+          }
+        },
+        "Added": {
+          "id": "ad",
+          "type": "date",
+          "date": {
+            "start": "2026-09-22",
+            "end": null,
+            "time_zone": null
+          }
+        },
+        "Last reviewed": {
+          "id": "lr",
+          "type": "date",
+          "date": {
+            "start": "2026-10-05",
+            "end": null,
+            "time_zone": null
+          }
+        },
+        "Notes": {
+          "id": "no",
+          "type": "formula",
+          "formula": {
+            "type": "string",
+            "string": "synthetic"
+          }
+        },
+        "Score": {
+          "id": "sc",
+          "type": "number",
+          "number": 3
+        }
+      },
+      "url": "https://www.notion.so/synthetic-33333333333343338333333333333333"
+    },
+    {
+      "object": "page",
+      "id": "44444444-4444-4444-8444-444444444444",
+      "created_time": "2026-09-20T10:00:00.000Z",
+      "last_edited_time": "2026-10-01T10:00:00.000Z",
+      "parent": {
+        "type": "data_source_id",
+        "data_source_id": "aaaaaaaa-0000-4000-8000-000000000001",
+        "database_id": "bbbbbbbb-0000-4000-8000-000000000002"
+      },
+      "archived": false,
+      "in_trash": false,
+      "properties": {
+        "Phrase": {
+          "id": "title",
+          "type": "title",
+          "title": []
+        },
+        "Translation": {
+          "id": "tr",
+          "type": "rich_text",
+          "rich_text": []
+        },
+        "Pronunciation": {
+          "id": "pr",
+          "type": "rich_text",
+          "rich_text": []
+        },
+        "Description": {
+          "id": "de",
+          "type": "rich_text",
+          "rich_text": []
+        },
+        "Example": {
+          "id": "ex",
+          "type": "rich_text",
+          "rich_text": []
+        },
+        "More examples": {
+          "id": "me",
+          "type": "rich_text",
+          "rich_text": []
+        },
+        "Synonym": {
+          "id": "sy",
+          "type": "rich_text",
+          "rich_text": []
+        },
+        "Situation": {
+          "id": "si",
+          "type": "multi_select",
+          "multi_select": []
+        },
+        "Type": {
+          "id": "ty",
+          "type": "select",
+          "select": null
+        },
+        "Status": {
+          "id": "st",
+          "type": "select",
+          "select": {
+            "id": "opt-new",
+            "name": "New",
+            "color": "blue"
+          }
+        },
+        "Added": {
+          "id": "ad",
+          "type": "date",
+          "date": null
+        },
+        "Last reviewed": {
+          "id": "lr",
+          "type": "date",
+          "date": null
+        },
+        "Notes": {
+          "id": "no",
+          "type": "formula",
+          "formula": {
+            "type": "string",
+            "string": "synthetic"
+          }
+        },
+        "Score": {
+          "id": "sc",
+          "type": "number",
+          "number": 3
+        }
+      },
+      "url": "https://www.notion.so/synthetic-44444444444444448444444444444444"
+    }
+  ],
+  "next_cursor": null,
+  "has_more": false,
+  "type": "page_or_data_source",
+  "page_or_data_source": {}
+}

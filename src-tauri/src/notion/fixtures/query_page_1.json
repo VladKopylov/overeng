@@ -1,0 +1,481 @@
+{
+  "object": "list",
+  "results": [
+    {
+      "object": "page",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "created_time": "2026-09-20T10:00:00.000Z",
+      "last_edited_time": "2026-10-01T10:00:00.000Z",
+      "parent": {
+        "type": "data_source_id",
+        "data_source_id": "aaaaaaaa-0000-4000-8000-000000000001",
+        "database_id": "bbbbbbbb-0000-4000-8000-000000000002"
+      },
+      "archived": false,
+      "in_trash": false,
+      "properties": {
+        "Phrase": {
+          "id": "title",
+          "type": "title",
+          "title": [
+            {
+              "type": "text",
+              "text": {
+                "content": "Whether we like it or not, …",
+                "link": null
+              },
+              "annotations": {
+                "bold": false,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+              },
+              "plain_text": "Whether we like it or not, …",
+              "href": null
+            }
+          ]
+        },
+        "Translation": {
+          "id": "tr",
+          "type": "rich_text",
+          "rich_text": [
+            {
+              "type": "text",
+              "text": {
+                "content": "Подобається нам чи ні, …",
+                "link": null
+              },
+              "annotations": {
+                "bold": false,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+              },
+              "plain_text": "Подобається нам чи ні, …",
+              "href": null
+            }
+          ]
+        },
+        "Pronunciation": {
+          "id": "pr",
+          "type": "rich_text",
+          "rich_text": [
+            {
+              "type": "text",
+              "text": {
+                "content": "/ˈweðər wi laɪk ɪt ɔːr nɑːt/",
+                "link": null
+              },
+              "annotations": {
+                "bold": false,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+              },
+              "plain_text": "/ˈweðər wi laɪk ɪt ɔːr nɑːt/",
+              "href": null
+            }
+          ]
+        },
+        "Description": {
+          "id": "de",
+          "type": "rich_text",
+          "rich_text": [
+            {
+              "type": "text",
+              "text": {
+                "content": "Admit that something is unavoidable.",
+                "link": null
+              },
+              "annotations": {
+                "bold": false,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+              },
+              "plain_text": "Admit that something is unavoidable.",
+              "href": null
+            }
+          ]
+        },
+        "Example": {
+          "id": "ex",
+          "type": "rich_text",
+          "rich_text": [
+            {
+              "type": "text",
+              "text": {
+                "content": "Whether we like it or not, the deadline is Friday.",
+                "link": null
+              },
+              "annotations": {
+                "bold": false,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+              },
+              "plain_text": "Whether we like it or not, the deadline is Friday.",
+              "href": null
+            }
+          ]
+        },
+        "More examples": {
+          "id": "me",
+          "type": "rich_text",
+          "rich_text": [
+            {
+              "type": "text",
+              "text": {
+                "content": "• Whether we like it or not, the tests have to pass first.\n• Whether we like it or not, we need to talk about scope.\n\n• Whether we like it or not, the client wants a demo.",
+                "link": null
+              },
+              "annotations": {
+                "bold": false,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+              },
+              "plain_text": "• Whether we like it or not, the tests have to pass first.\n• Whether we like it or not, we need to talk about scope.\n\n• Whether we like it or not, the client wants a demo.",
+              "href": null
+            }
+          ]
+        },
+        "Synonym": {
+          "id": "sy",
+          "type": "rich_text",
+          "rich_text": []
+        },
+        "Situation": {
+          "id": "si",
+          "type": "multi_select",
+          "multi_select": [
+            {
+              "id": "ms-stand-up",
+              "name": "Stand-up",
+              "color": "gray"
+            },
+            {
+              "id": "ms-technical-discussion",
+              "name": "Technical discussion",
+              "color": "gray"
+            }
+          ]
+        },
+        "Type": {
+          "id": "ty",
+          "type": "select",
+          "select": {
+            "id": "opt-starter",
+            "name": "Starter",
+            "color": "blue"
+          }
+        },
+        "Status": {
+          "id": "st",
+          "type": "select",
+          "select": {
+            "id": "opt-practicing",
+            "name": "Practicing",
+            "color": "blue"
+          }
+        },
+        "Added": {
+          "id": "ad",
+          "type": "date",
+          "date": {
+            "start": "2026-09-20",
+            "end": null,
+            "time_zone": null
+          }
+        },
+        "Last reviewed": {
+          "id": "lr",
+          "type": "date",
+          "date": null
+        },
+        "Notes": {
+          "id": "no",
+          "type": "formula",
+          "formula": {
+            "type": "string",
+            "string": "synthetic"
+          }
+        },
+        "Score": {
+          "id": "sc",
+          "type": "number",
+          "number": 3
+        }
+      },
+      "url": "https://www.notion.so/synthetic-11111111111141118111111111111111"
+    },
+    {
+      "object": "page",
+      "id": "22222222-2222-4222-8222-222222222222",
+      "created_time": "2026-09-20T10:00:00.000Z",
+      "last_edited_time": "2026-10-01T10:00:00.000Z",
+      "parent": {
+        "type": "data_source_id",
+        "data_source_id": "aaaaaaaa-0000-4000-8000-000000000001",
+        "database_id": "bbbbbbbb-0000-4000-8000-000000000002"
+      },
+      "archived": false,
+      "in_trash": false,
+      "properties": {
+        "Phrase": {
+          "id": "title",
+          "type": "title",
+          "title": [
+            {
+              "type": "text",
+              "text": {
+                "content": "Where it gets ",
+                "link": null
+              },
+              "annotations": {
+                "bold": false,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+              },
+              "plain_text": "Where it gets ",
+              "href": null
+            },
+            {
+              "type": "text",
+              "text": {
+                "content": "tricky is …",
+                "link": null
+              },
+              "annotations": {
+                "bold": true,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+              },
+              "plain_text": "tricky is …",
+              "href": null
+            }
+          ]
+        },
+        "Translation": {
+          "id": "tr",
+          "type": "rich_text",
+          "rich_text": [
+            {
+              "type": "text",
+              "text": {
+                "content": "Найскладніше тут те, що…",
+                "link": null
+              },
+              "annotations": {
+                "bold": false,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+              },
+              "plain_text": "Найскладніше тут те, що…",
+              "href": null
+            }
+          ]
+        },
+        "Pronunciation": {
+          "id": "pr",
+          "type": "rich_text",
+          "rich_text": [
+            {
+              "type": "text",
+              "text": {
+                "content": "/wer ɪt ɡets ˈtrɪki ɪz/",
+                "link": null
+              },
+              "annotations": {
+                "bold": false,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+              },
+              "plain_text": "/wer ɪt ɡets ˈtrɪki ɪz/",
+              "href": null
+            }
+          ]
+        },
+        "Description": {
+          "id": "de",
+          "type": "rich_text",
+          "rich_text": [
+            {
+              "type": "text",
+              "text": {
+                "content": "Use it to point at ",
+                "link": null
+              },
+              "annotations": {
+                "bold": false,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+              },
+              "plain_text": "Use it to point at ",
+              "href": null
+            },
+            {
+              "type": "text",
+              "text": {
+                "content": "the hard part",
+                "link": null
+              },
+              "annotations": {
+                "bold": true,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+              },
+              "plain_text": "the hard part",
+              "href": null
+            },
+            {
+              "type": "text",
+              "text": {
+                "content": " of a problem.",
+                "link": null
+              },
+              "annotations": {
+                "bold": false,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+              },
+              "plain_text": " of a problem.",
+              "href": null
+            }
+          ]
+        },
+        "Example": {
+          "id": "ex",
+          "type": "rich_text",
+          "rich_text": [
+            {
+              "type": "text",
+              "text": {
+                "content": "The UI part is easy. Where it gets tricky is the sync.",
+                "link": null
+              },
+              "annotations": {
+                "bold": false,
+                "italic": false,
+                "strikethrough": false,
+                "underline": false,
+                "code": false,
+                "color": "default"
+              },
+              "plain_text": "The UI part is easy. Where it gets tricky is the sync.",
+              "href": null
+            }
+          ]
+        },
+        "More examples": {
+          "id": "me",
+          "type": "rich_text",
+          "rich_text": []
+        },
+        "Synonym": {
+          "id": "sy",
+          "type": "rich_text",
+          "rich_text": []
+        },
+        "Situation": {
+          "id": "si",
+          "type": "multi_select",
+          "multi_select": [
+            {
+              "id": "ms-code-review",
+              "name": "Code review",
+              "color": "gray"
+            }
+          ]
+        },
+        "Type": {
+          "id": "ty",
+          "type": "select",
+          "select": {
+            "id": "opt-mistake-fix",
+            "name": "Mistake fix",
+            "color": "blue"
+          }
+        },
+        "Status": {
+          "id": "st",
+          "type": "select",
+          "select": {
+            "id": "opt-new",
+            "name": "New",
+            "color": "blue"
+          }
+        },
+        "Added": {
+          "id": "ad",
+          "type": "date",
+          "date": {
+            "start": "2026-09-21",
+            "end": null,
+            "time_zone": null
+          }
+        },
+        "Last reviewed": {
+          "id": "lr",
+          "type": "date",
+          "date": {
+            "start": "2026-10-02",
+            "end": null,
+            "time_zone": null
+          }
+        },
+        "Notes": {
+          "id": "no",
+          "type": "formula",
+          "formula": {
+            "type": "string",
+            "string": "synthetic"
+          }
+        },
+        "Score": {
+          "id": "sc",
+          "type": "number",
+          "number": 3
+        }
+      },
+      "url": "https://www.notion.so/synthetic-22222222222242228222222222222222"
+    }
+  ],
+  "next_cursor": "cursor-page-2",
+  "has_more": true,
+  "type": "page_or_data_source",
+  "page_or_data_source": {}
+}

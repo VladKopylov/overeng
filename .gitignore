@@ -1,0 +1,17 @@
+node_modules/
+dist/
+src-tauri/target/
+
+.omc/
+
+*.env
+.env*
+secrets*
+*.secret
+/settings.json
+
+tests/fixtures/real/
+
+*.log
+.DS_Store
+Thumbs.db

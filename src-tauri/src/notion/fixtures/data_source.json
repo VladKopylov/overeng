@@ -1,0 +1,41 @@
+{
+  "object": "data_source",
+  "id": "aaaaaaaa-0000-4000-8000-000000000001",
+  "title": [
+    {
+      "type": "text",
+      "text": {
+        "content": "Synthetic ",
+        "link": null
+      },
+      "annotations": {
+        "bold": false,
+        "italic": false,
+        "strikethrough": false,
+        "underline": false,
+        "code": false,
+        "color": "default"
+      },
+      "plain_text": "Synthetic ",
+      "href": null
+    },
+    {
+      "type": "text",
+      "text": {
+        "content": "Vocab",
+        "link": null
+      },
+      "annotations": {
+        "bold": false,
+        "italic": false,
+        "strikethrough": false,
+        "underline": false,
+        "code": false,
+        "color": "default"
+      },
+      "plain_text": "Vocab",
+      "href": null
+    }
+  ],
+  "properties": {}
+}

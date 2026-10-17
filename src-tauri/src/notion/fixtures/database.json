@@ -1,0 +1,33 @@
+{
+  "object": "database",
+  "id": "bbbbbbbb-0000-4000-8000-000000000002",
+  "title": [
+    {
+      "type": "text",
+      "text": {
+        "content": "Synthetic Vocab",
+        "link": null
+      },
+      "annotations": {
+        "bold": false,
+        "italic": false,
+        "strikethrough": false,
+        "underline": false,
+        "code": false,
+        "color": "default"
+      },
+      "plain_text": "Synthetic Vocab",
+      "href": null
+    }
+  ],
+  "data_sources": [
+    {
+      "id": "aaaaaaaa-0000-4000-8000-000000000001",
+      "name": "Synthetic Vocab"
+    },
+    {
+      "id": "aaaaaaaa-0000-4000-8000-000000000003",
+      "name": "Archive"
+    }
+  ]
+}

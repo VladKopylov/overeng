@@ -1,0 +1,14 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "overlay",
+  "description": "Мінімальні права для вікна-оверлея. Картки — через Rust-команду get_cards і подію cards-updated.",
+  "windows": ["overlay"],
+  "permissions": [
+    "core:event:default",
+    "core:window:allow-set-ignore-cursor-events",
+    "core:window:allow-set-position",
+    "core:window:allow-set-always-on-top",
+    "core:window:allow-outer-size",
+    "core:window:allow-primary-monitor"
+  ]
+}

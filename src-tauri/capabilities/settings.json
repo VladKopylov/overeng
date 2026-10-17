@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "settings",
+  "description": "Права для вікна налаштувань. Жодних store:* — налаштування й токен лише через Rust-команди.",
+  "windows": ["settings"],
+  "permissions": ["core:default"]
+}
