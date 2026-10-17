@@ -17,6 +17,8 @@
         "title": "Word Overlay",
         "width": 380,
         "height": 200,
+        "minWidth": 180,
+        "minHeight": 90,
         "transparent": true,
         "decorations": false,
         "alwaysOnTop": true,

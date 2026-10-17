@@ -6,11 +6,13 @@ use serde_json::Value;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_store::StoreExt;
 
+use crate::layout::Layout;
 use crate::notion::{Card, Mapping, NotionError};
 
 pub const STORE_FILE: &str = "settings.json";
 const KEY_SETTINGS: &str = "settings";
 const KEY_TOKEN: &str = "notion_token";
+const KEY_LAYOUT: &str = "layout";
 pub const CACHE_FILE: &str = "cards.json";
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -59,6 +61,44 @@ pub fn save(app: &AppHandle, settings: &Settings) -> Result<(), NotionError> {
     let value = serde_json::to_value(settings).map_err(storage_err)?;
     store.set(KEY_SETTINGS, value);
     store.save().map_err(storage_err)
+}
+
+pub fn load_layout(app: &AppHandle) -> Result<Layout, NotionError> {
+    let store = app.store(STORE_FILE).map_err(storage_err)?;
+    let Some(value) = store.get(KEY_LAYOUT) else {
+        return Ok(Layout::default());
+    };
+    let mut layout = match serde_json::from_value::<Layout>(value) {
+        Ok(layout) => layout,
+        Err(e) => {
+            crate::write_log(
+                app,
+                &format!("layout у settings.json зіпсований ({e}) — беру стандартний"),
+            );
+            return Ok(Layout::default());
+        }
+    };
+    if layout.sanitize() {
+        crate::write_log(app, "layout: відкинуто нереальні збережені позицію/розміри");
+    }
+    Ok(layout)
+}
+
+pub fn save_layout(app: &AppHandle, layout: &Layout) -> Result<(), NotionError> {
+    let store = app.store(STORE_FILE).map_err(storage_err)?;
+    let value = serde_json::to_value(layout).map_err(storage_err)?;
+    store.set(KEY_LAYOUT, value);
+    store.save().map_err(storage_err)
+}
+
+pub fn update_layout<T>(
+    app: &AppHandle,
+    change: impl FnOnce(&mut Layout) -> T,
+) -> Result<(Layout, T), NotionError> {
+    let mut layout = load_layout(app)?;
+    let out = change(&mut layout);
+    save_layout(app, &layout)?;
+    Ok((layout, out))
 }
 
 pub fn token(app: &AppHandle) -> Option<String> {
@@ -213,5 +253,19 @@ mod tests {
         std::fs::write(&path, "не json").unwrap();
         assert!(matches!(read_cache(&path), Err(NotionError::Storage(_))));
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn cache_with_missing_card_fields_still_loads() {
+        let cache: CardCache = serde_json::from_str(
+            r#"{"synced_at":1,"cards":[{"id":"x","phrase":"hello","examples":["a"]}]}"#,
+        )
+        .unwrap();
+        let c = &cache.cards[0];
+        assert_eq!(c.phrase, "hello");
+        assert_eq!(c.examples, vec!["a"]);
+        assert_eq!(c.description, None);
+        assert_eq!(c.synonym, None);
+        assert!(c.situations.is_empty());
     }
 }

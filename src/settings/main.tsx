@@ -27,6 +27,9 @@ type Settings = {
 
 type SettingsView = Settings & { has_token: boolean };
 
+type Corner = "top_left" | "top_right" | "bottom_left" | "bottom_right";
+type Layout = { corner: Corner };
+
 type DataSourceOption = { id: string; name: string };
 type SyncResult = { total: number; visible: number };
 type Status = { kind: "idle" | "busy" | "ok" | "error"; text: string };
@@ -45,6 +48,21 @@ const MAPPING_FIELDS: Array<[keyof Mapping, string]> = [
   ["last_reviewed", "Останнє повторення (дата)"],
 ];
 
+const CORNERS: Array<[Corner, string]> = [
+  ["bottom_right", "Правий нижній"],
+  ["bottom_left", "Лівий нижній"],
+  ["top_right", "Правий верхній"],
+  ["top_left", "Лівий верхній"],
+];
+
+const HOTKEYS: Array<[string, string]> = [
+  ["Ctrl+Shift+F9", "наступна картка"],
+  ["Ctrl+Shift+F10", "компактна / розгорнута картка"],
+  ["Ctrl+Shift+F11", "сховати / показати оверлей"],
+  ["Ctrl+Shift+F12", "режим редагування: перетягнути й змінити розмір (ще раз — готово)"],
+  ["Ctrl+Shift+F8", "відкрити це вікно (забирає фокус)"],
+];
+
 function log(msg: string): void {
   invoke("debug_log", { msg: `[settings] ${msg}` }).catch(() => undefined);
 }
@@ -56,6 +74,7 @@ function SettingsApp() {
   const [hiddenText, setHiddenText] = useState("");
   const [options, setOptions] = useState<DataSourceOption[]>([]);
   const [status, setStatus] = useState<Status>({ kind: "idle", text: "" });
+  const [corner, setCorner] = useState<Corner>("bottom_right");
   const busy = status.kind === "busy";
 
   useEffect(() => {
@@ -67,6 +86,9 @@ function SettingsApp() {
         setHiddenText(rest.hidden_statuses.join(", "));
       })
       .catch((e) => setStatus({ kind: "error", text: String(e) }));
+    invoke<Layout>("get_layout")
+      .then((layout) => setCorner(layout.corner))
+      .catch((e) => log(`get_layout failed: ${String(e)}`));
   }, []);
 
   if (!settings) {
@@ -135,6 +157,21 @@ function SettingsApp() {
     run("Зберігаю…", async () => {
       await save();
       return "Налаштування збережено.";
+    });
+
+  const chooseCorner = (next: Corner) =>
+    run("Зберігаю кут…", async () => {
+      await invoke("set_corner", { corner: next });
+      setCorner(next);
+      log(`corner -> ${next}`);
+      return "Кут збережено, оверлей переставлено.";
+    });
+
+  const resetPosition = () =>
+    run("Скидаю позицію…", async () => {
+      await invoke("reset_overlay_position");
+      log("reset position");
+      return "Позицію й розміри скинуто.";
     });
 
   const setMapping = (key: keyof Mapping, value: string) =>
@@ -237,6 +274,46 @@ function SettingsApp() {
         </details>
       </section>
 
+      <section>
+        <h2>4. Оверлей</h2>
+        <label className="field">
+          <span>Кут екрана</span>
+          <select
+            className="inline"
+            value={corner}
+            disabled={busy}
+            onChange={(e) => void chooseCorner(e.target.value as Corner)}
+          >
+            {CORNERS.map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="row">
+          <button onClick={resetPosition} disabled={busy}>
+            Скинути позицію
+          </button>
+        </div>
+        <p className="hint">
+          Позицію й розмір можна змінити в режимі редагування (Ctrl+Shift+F12). «Скинути позицію»
+          повертає оверлей у вибраний кут зі стандартним розміром.
+        </p>
+        <table className="hotkeys">
+          <tbody>
+            {HOTKEYS.map(([keys, action]) => (
+              <tr key={keys}>
+                <td>
+                  <kbd>{keys}</kbd>
+                </td>
+                <td>{action}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+
       <section className="actions">
         <button className="primary" onClick={sync} disabled={busy || !hasToken || !settings.data_source_id}>
           Синхронізувати
@@ -251,7 +328,7 @@ function SettingsApp() {
       </p>
 
       <footer>
-        <span className="hint">Ctrl+Shift+F8 — відкрити це вікно · Ctrl+Shift+F9 — наступна фраза</span>
+        <span className="hint">Ctrl+Shift+F8 — відкрити це вікно · гарячі клавіші — у розділі 4</span>
         <button className="quiet" onClick={() => void invoke("quit_app")}>
           Вийти з програми
         </button>

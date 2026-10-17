@@ -14,6 +14,15 @@ body {
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 
+.stage {
+  width: 100%;
+  height: 100%;
+}
+
+.stage.hidden {
+  opacity: 0;
+}
+
 .card {
   box-sizing: border-box;
   width: 100%;
@@ -29,12 +38,15 @@ body {
   justify-content: safe center;
   gap: 5px;
   overflow: hidden;
+  --font-scale: 1;
 }
 
 .text,
 .pron,
 .tr,
-.ex {
+.ex,
+.syn,
+.desc {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -60,7 +72,7 @@ body {
 }
 
 .text {
-  font-size: 20px;
+  font-size: calc(20px * var(--font-scale));
   font-weight: 600;
   line-height: 1.25;
   -webkit-line-clamp: 2;
@@ -68,14 +80,14 @@ body {
 
 .pron {
   -webkit-line-clamp: 1;
-  font-size: 14px;
+  font-size: calc(14px * var(--font-scale));
   color: #b9c3d6;
   font-family: "Segoe UI", "Lucida Sans Unicode", "Arial Unicode MS", sans-serif;
 }
 
 .tr {
   -webkit-line-clamp: 2;
-  font-size: 16px;
+  font-size: calc(16px * var(--font-scale));
   line-height: 1.3;
   color: #ffd98a;
 }
@@ -84,8 +96,74 @@ body {
   -webkit-line-clamp: 2;
   flex-shrink: 1;
   min-height: 0;
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale));
   line-height: 1.35;
   font-style: italic;
   color: #d5dbe6;
+}
+
+.card.expanded {
+  padding: 14px 18px 12px;
+  gap: 6px;
+}
+
+.card.expanded .text {
+  font-size: calc(19px * var(--font-scale));
+  -webkit-line-clamp: 3;
+}
+
+.card.expanded .pron {
+  font-size: calc(13px * var(--font-scale));
+}
+
+.card.expanded .tr {
+  font-size: calc(15px * var(--font-scale));
+  -webkit-line-clamp: 3;
+}
+
+.syn {
+  -webkit-line-clamp: 2;
+  font-size: calc(13px * var(--font-scale));
+  line-height: 1.3;
+  color: #a8e6c1;
+}
+
+.desc {
+  -webkit-line-clamp: 4;
+  font-size: calc(13px * var(--font-scale));
+  line-height: 1.35;
+  color: #c9d1de;
+}
+
+.card.expanded .ex {
+  flex-shrink: 0;
+  -webkit-line-clamp: 3;
+  font-size: calc(12.5px * var(--font-scale));
+  padding-left: 8px;
+  border-left: 2px solid rgba(255, 255, 255, 0.18);
+}
+
+.card.editing {
+  cursor: move;
+  border: 2px dashed #5fb4ff;
+  box-shadow: inset 0 0 0 1px rgba(95, 180, 255, 0.35);
+  background: rgba(12, 22, 36, 0.86);
+}
+
+.edit-hint {
+  margin-top: auto;
+  flex-shrink: 0;
+  align-self: stretch;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0b1420;
+  text-shadow: none;
+  background: #5fb4ff;
+  border-radius: 6px;
+  padding: 3px 6px;
+}
+
+.card.expanded[data-tight] .ex {
+  -webkit-line-clamp: 2;
 }

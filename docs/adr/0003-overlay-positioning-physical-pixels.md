@@ -1,7 +1,7 @@
 # ADR 0003: Позиціонування оверлея в physical pixels
 
-- **Status:** Accepted
-- **Date:** 2026-10-17
+- **Status:** Accepted, розрахунок позиції замінено [0015](0015-overlay-geometry-pure-rust.md)
+- **Date:** 2026-10-17 (оновлено 2026-10-18)
 
 ## Context
 
@@ -18,11 +18,12 @@
 - ставить позицію через `setPosition(new PhysicalPosition(x, y))`;
 - пише в лог монітор, `scaleFactor`, `workArea`, розмір вікна й результат.
 
+**Оновлення 2026-10-18.** `positionBottomRight()` прибрано. Позицію тепер рахує Rust-команда `overlay_rect` (чиста функція `layout::target_rect`, [0015](0015-overlay-geometry-pure-rust.md)): вибраний кут, збережена позиція, притискання до робочої області, кілька моніторів. Принцип той самий: усе в physical px, `workArea` не множиться на `scaleFactor`, відступ = 16 px × `scaleFactor`, щоб на HiDPI він виглядав так само.
+
 ## Consequences
 
 - Позиція коректна на будь-якому DPI без перерахунку.
-- Поки що підтримується лише основний монітор; вибір монітора й кута — follow-up.
-- Відступ 16 physical px візуально менший на HiDPI-моніторах.
+- Кут вибирається в налаштуваннях; монітор визначається за збереженою позицією ([0015](0015-overlay-geometry-pure-rust.md)).
 
 ## References
 

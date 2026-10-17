@@ -10,7 +10,7 @@
 ## Decision
 
 - Налаштування й токен зберігаються через **Rust API** `tauri-plugin-store` (`app.store(...)` з трейту `StoreExt`) у файлі `settings.json` у папці даних застосунку (наприклад, `%APPDATA%\com.vlad.wordoverlay\`). Токен лежить окремим ключем `notion_token`.
-- **JS не має жодних `store:*` permissions** у capabilities. Доступ лише через наші команди в `lib.rs`.
+- **JS не має жодних `store:*` permissions** у capabilities. Доступ лише через наші команди в `lib.rs`. Так само зберігається й стан розкладки оверлея (ключ `layout`, [0014](0014-overlay-controls-modes-and-layout-state.md)).
 - `set_token` — **write-only**: нічого не повертає й не логує сам токен (лише «токен збережено» / «токен видалено»). Значення обрізається (`trim`), порожній рядок видаляє ключ.
 - `get_settings` повертає `SettingsView` = налаштування (через `#[serde(flatten)]`) + прапорець `has_token`. Поля з токеном там немає, і це перевіряє тест `settings_view_never_contains_token_field`.
 - Команди не приймають токен аргументом: `notion_client()` бере його зі store сам.

@@ -1,3 +1,4 @@
+mod layout;
 mod notion;
 mod settings;
 
@@ -6,9 +7,10 @@ use std::io::Write;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use tauri::{AppHandle, Emitter, Manager, State, WindowEvent};
+use tauri::{AppHandle, Emitter, Manager, State, WebviewWindow, WindowEvent};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, ShortcutState};
 
+use layout::{Corner, Layout, MonitorArea, Rect};
 use notion::client::{NotionClient, NOTION_BASE_URL};
 use notion::{Card, DataSourceOption, NotionError};
 use settings::{Settings, SettingsView};
@@ -17,7 +19,21 @@ const CYCLE_SHORTCUT: &str = "ctrl+shift+F9";
 
 const SETTINGS_SHORTCUT: &str = "ctrl+shift+F8";
 
+const EXPAND_SHORTCUT: &str = "ctrl+shift+F10";
+
+const VISIBLE_SHORTCUT: &str = "ctrl+shift+F11";
+
+const EDIT_SHORTCUT: &str = "ctrl+shift+F12";
+
 const CYCLE_EVENT: &str = "cycle-phrase";
+
+const EXPANDED_EVENT: &str = "overlay-expanded";
+
+const VISIBLE_EVENT: &str = "overlay-visible";
+
+const EDIT_EVENT: &str = "toggle-edit";
+
+const LAYOUT_RESET_EVENT: &str = "layout-reset";
 
 const CARDS_UPDATED_EVENT: &str = "cards-updated";
 
@@ -75,6 +91,148 @@ fn rotate_log(app: &AppHandle) {
             let _ = std::fs::rename(&path, dir.join("overlay-debug.log.old"));
         }
     }
+}
+
+fn emit_overlay<S: serde::Serialize + Clone>(app: &AppHandle, event: &str, payload: S) {
+    if let Err(e) = app.emit_to("overlay", event, payload) {
+        write_log(app, &format!("emit {event} ПОМИЛКА: {e}"));
+    }
+}
+
+fn toggle_layout(app: &AppHandle, event: &str, change: impl FnOnce(&mut Layout) -> bool) {
+    match settings::update_layout(app, change) {
+        Ok((_, value)) => {
+            write_log(app, &format!("{event} -> {value}"));
+            emit_overlay(app, event, value);
+        }
+        Err(e) => write_log(app, &format!("{event} ПОМИЛКА збереження: {e}")),
+    }
+}
+
+fn overlay_window(app: &AppHandle) -> Result<WebviewWindow, String> {
+    app.get_webview_window("overlay")
+        .ok_or_else(|| "вікно overlay не знайдено".to_string())
+}
+
+fn outer_rect(window: &WebviewWindow) -> Result<Rect, String> {
+    let pos = window.outer_position().map_err(|e| e.to_string())?;
+    let size = window.outer_size().map_err(|e| e.to_string())?;
+    Ok(Rect {
+        x: pos.x,
+        y: pos.y,
+        width: size.width as i32,
+        height: size.height as i32,
+    })
+}
+
+#[tauri::command]
+fn get_layout(app: AppHandle) -> Result<Layout, NotionError> {
+    settings::load_layout(&app)
+}
+
+#[tauri::command]
+fn overlay_rect(app: AppHandle, from_current: bool) -> Result<Rect, String> {
+    let result = overlay_rect_impl(&app, from_current);
+    match &result {
+        Ok(r) => write_log(
+            &app,
+            &format!(
+                "overlay_rect (from_current={from_current}): {},{} {}x{}",
+                r.x, r.y, r.width, r.height
+            ),
+        ),
+        Err(e) => write_log(&app, &format!("overlay_rect ПОМИЛКА: {e}")),
+    }
+    result
+}
+
+fn overlay_rect_impl(app: &AppHandle, from_current: bool) -> Result<Rect, String> {
+    let window = overlay_window(app)?;
+    let layout = settings::load_layout(app).map_err(|e| e.to_string())?;
+    let monitors = window.available_monitors().map_err(|e| e.to_string())?;
+    let primary = window.primary_monitor().ok().flatten();
+    let primary_index = primary
+        .and_then(|p| {
+            monitors
+                .iter()
+                .position(|m| m.position() == p.position() && m.size() == p.size())
+        })
+        .unwrap_or(0);
+    let areas: Vec<MonitorArea> = monitors
+        .iter()
+        .map(|m| {
+            let wa = m.work_area();
+            MonitorArea {
+                work_area: Rect {
+                    x: wa.position.x,
+                    y: wa.position.y,
+                    width: wa.size.width as i32,
+                    height: wa.size.height as i32,
+                },
+                scale: m.scale_factor(),
+            }
+        })
+        .collect();
+    let current = if from_current {
+        Some(outer_rect(&window)?)
+    } else {
+        None
+    };
+    write_log(
+        app,
+        &format!(
+            "overlay_rect: моніторів {}, основний #{primary_index}, expanded={}, збережена позиція: {}",
+            areas.len(),
+            layout.expanded,
+            layout.position.is_some()
+        ),
+    );
+    layout::target_rect(&areas, primary_index, &layout, current)
+        .ok_or_else(|| "моніторів не знайдено".to_string())
+}
+
+#[tauri::command]
+fn save_overlay_rect(app: AppHandle, expanded: bool) -> Result<(), String> {
+    let result = overlay_window(&app)
+        .and_then(|w| {
+            let scale = w.scale_factor().map_err(|e| e.to_string())?;
+            outer_rect(&w).map(|rect| (rect, scale))
+        })
+        .and_then(|(rect, scale)| {
+            settings::update_layout(&app, |l| l.remember(rect, expanded, scale))
+                .map(|_| rect)
+                .map_err(|e| e.to_string())
+        });
+    match &result {
+        Ok(r) => write_log(
+            &app,
+            &format!(
+                "позицію збережено (expanded={expanded}): {},{} {}x{}",
+                r.x, r.y, r.width, r.height
+            ),
+        ),
+        Err(e) => write_log(&app, &format!("save_overlay_rect ПОМИЛКА: {e}")),
+    }
+    result.map(|_| ())
+}
+
+#[tauri::command]
+fn set_corner(app: AppHandle, corner: Corner) -> Result<(), NotionError> {
+    settings::update_layout(&app, |l| {
+        l.corner = corner;
+        l.position = None;
+    })?;
+    write_log(&app, &format!("кут оверлея: {corner:?}"));
+    emit_overlay(&app, LAYOUT_RESET_EVENT, ());
+    Ok(())
+}
+
+#[tauri::command]
+fn reset_overlay_position(app: AppHandle) -> Result<(), NotionError> {
+    settings::update_layout(&app, Layout::reset_position)?;
+    write_log(&app, "позицію оверлея скинуто");
+    emit_overlay(&app, LAYOUT_RESET_EVENT, ());
+    Ok(())
 }
 
 #[tauri::command]
@@ -171,7 +329,7 @@ fn get_settings(app: AppHandle) -> Result<SettingsView, NotionError> {
 fn set_settings(app: AppHandle, new_settings: Settings) -> Result<(), NotionError> {
     settings::save(&app, &new_settings)?;
     write_log(&app, "налаштування збережено");
-    let _ = app.emit_to("overlay", CARDS_UPDATED_EVENT, ());
+    emit_overlay(&app, CARDS_UPDATED_EVENT, ());
     Ok(())
 }
 
@@ -242,9 +400,7 @@ async fn run_sync(app: &AppHandle) -> Result<SyncResult, NotionError> {
     settings::write_cache(&settings::cache_path(app)?, &cards)?;
     let total = cards.len();
     let visible = settings::visible_cards(cards, &current.hidden_statuses).len();
-    if let Err(e) = app.emit_to("overlay", CARDS_UPDATED_EVENT, ()) {
-        write_log(app, &format!("emit {CARDS_UPDATED_EVENT} ПОМИЛКА: {e}"));
-    }
+    emit_overlay(app, CARDS_UPDATED_EVENT, ());
     Ok(SyncResult { total, visible })
 }
 
@@ -311,10 +467,23 @@ pub fn run() {
                         return;
                     }
                     write_log(app, &format!("hotkey {shortcut:?} натиснуто"));
-                    if shortcut.matches(Modifiers::CONTROL | Modifiers::SHIFT, Code::F8) {
+                    let mods = Modifiers::CONTROL | Modifiers::SHIFT;
+                    if shortcut.matches(mods, Code::F8) {
                         open_settings(app);
-                    } else if let Err(e) = app.emit_to("overlay", CYCLE_EVENT, ()) {
-                        write_log(app, &format!("emit {CYCLE_EVENT} ПОМИЛКА: {e}"));
+                    } else if shortcut.matches(mods, Code::F9) {
+                        emit_overlay(app, CYCLE_EVENT, ());
+                    } else if shortcut.matches(mods, Code::F10) {
+                        toggle_layout(app, EXPANDED_EVENT, |l| {
+                            l.expanded = !l.expanded;
+                            l.expanded
+                        });
+                    } else if shortcut.matches(mods, Code::F11) {
+                        toggle_layout(app, VISIBLE_EVENT, |l| {
+                            l.visible = !l.visible;
+                            l.visible
+                        });
+                    } else if shortcut.matches(mods, Code::F12) {
+                        emit_overlay(app, EDIT_EVENT, ());
                     }
                 })
                 .build(),
@@ -326,7 +495,13 @@ pub fn run() {
             rotate_log(handle);
             write_log(handle, "=== старт застосунку ===");
 
-            for shortcut in [CYCLE_SHORTCUT, SETTINGS_SHORTCUT] {
+            for shortcut in [
+                CYCLE_SHORTCUT,
+                SETTINGS_SHORTCUT,
+                EXPAND_SHORTCUT,
+                VISIBLE_SHORTCUT,
+                EDIT_SHORTCUT,
+            ] {
                 match handle.global_shortcut().register(shortcut) {
                     Ok(()) => write_log(handle, &format!("hotkey {shortcut} зареєстровано")),
                     Err(e) => {
@@ -374,7 +549,12 @@ pub fn run() {
             resolve_data_source,
             sync_notion,
             get_cards,
-            quit_app
+            quit_app,
+            get_layout,
+            overlay_rect,
+            save_overlay_rect,
+            set_corner,
+            reset_overlay_position
         ])
         .run(tauri::generate_context!())
         .expect("помилка під час запуску Tauri-застосунку");

@@ -1,7 +1,7 @@
 # ADR 0002: Вікно оверлея ніколи не забирає фокус у гри
 
 - **Status:** Accepted
-- **Date:** 2026-10-17
+- **Date:** 2026-10-17 (оновлено 2026-10-18)
 
 ## Context
 
@@ -21,7 +21,9 @@
 
 **Click-through:** оверлей викликає `setIgnoreCursorEvents(true)`, тож кліки проходять у гру.
 
-**Оверлей ніколи не показуємо і не ховаємо.** Hotkey лише міняє вміст картки (подія `cycle-phrase`), без `show` / `hide` / `focus`.
+**Оверлей ніколи не показуємо і не ховаємо.** Hotkeys лише міняють вміст картки (подія `cycle-phrase`), без `show` / `hide` / `focus`. «Сховати» (Ctrl+Shift+F11) — це `opacity: 0` і порожній DOM, а не `hide()` ([0014](0014-overlay-controls-modes-and-layout-state.md)).
+
+**Click-through вимикається лише в режимі редагування** (Ctrl+Shift+F12) і повертається при виході або автоматично через 60 с без взаємодії ([0014](0014-overlay-controls-modes-and-layout-state.md)). Перетягування не використовує `startDragging()` ([0016](0016-edit-mode-drag-noactivate-window.md)). Зміни розміру й позиції йдуть через `SetWindowPos` з `SWP_NOACTIVATE` ([0015](0015-overlay-geometry-pure-rust.md)).
 
 **Переутвердження topmost** (`reassertTopmost` у `src/overlay/main.tsx`) — при старті, кожні 5 с (`TOPMOST_INTERVAL_MS`) і щоразу, коли оверлей раптом отримав фокус:
 
@@ -46,7 +48,8 @@
 - Гра не втрачає фокус ні при старті, ні при зміні фрази.
 - Періодичний `SetWindowPos` коштує дешево, зате повертає оверлей наверх, якщо гра його перекрила.
 - Після Ctrl+Shift+F8 фокус перейде у вікно налаштувань — так задумано.
-- Поведінку можна перевірити лише на Windows (результати — у `docs/spike-results.md`).
+- Поведінку можна перевірити лише на Windows (результати — у `docs/spike-results.md`). Тести в Hearthstone, Diablo 4, CS2 і Deadlock: фокус не губиться.
+- У режимі редагування гра може втратити фокус лише після кліку користувача по картці ([0016](0016-edit-mode-drag-noactivate-window.md)).
 
 ## References
 
